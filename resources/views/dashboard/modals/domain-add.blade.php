@@ -1,4 +1,4 @@
-<div id="domain-modal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px)">
+<div id="domain-modal" style="display:none;position:fixed;inset:0;z-index:2100;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px)">
     <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:480px;margin:1rem;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
 
         <button onclick="closeDomainModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;line-height:1;padding:0.2rem 0.5rem;border-radius:6px;transition:var(--transition)" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='none'">&times;</button>
