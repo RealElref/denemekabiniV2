@@ -177,5 +177,7 @@
 "domain_name_invalid": "Domain adı yalnızca harf, rakam ve tire (-) içerebilir.",
 "domain_delete_confirm": "Bu domain talebini silmek istediğinize emin misiniz?",
 "error_generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
-"insufficient_credits": "Yetersiz kredi bakiyesi."
+"insufficient_credits": "Yetersiz kredi bakiyesi.",
+"domain_already_exists": "Bu domain zaten eklenmiş veya onay bekliyor.",
+"domain_submitted": "Domain talebiniz başarıyla oluşturuldu. Admin onayı bekleniyor."
 }
