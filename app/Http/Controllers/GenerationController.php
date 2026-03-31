@@ -65,6 +65,14 @@ if (!$user) {
                 'public'
             );
 
+            if (!$personPath || !$garmentPath) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'upload_failed',
+                    'message' => 'Fotoğraf yüklenemedi. Lütfen tekrar deneyin.',
+                ], 500);
+            }
+
             // Generation kaydını DB'ye kaydet (Tüm gerekli alanlarla birlikte)
             $generation = Generation::create([
                 'user_id'            => $user->id,

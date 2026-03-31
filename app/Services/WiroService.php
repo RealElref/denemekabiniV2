@@ -16,7 +16,7 @@ class WiroService
     {
         $this->apiKey   = env('WIRO_API_KEY', '');
         $this->apiUrl   = env('WIRO_API_URL', 'https://api.wiro.ai/v1');
-        $this->mockMode = env('WIRO_MOCK', false);
+        $this->mockMode = filter_var(env('WIRO_MOCK', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     public function startJob(string $personImagePath, string $garmentImagePath, string $prompt = ''): array
