@@ -60,4 +60,7 @@ Route::middleware(['auth'])->prefix('api')->group(function () {
     Route::post('/generations', [\App\Http\Controllers\GenerationController::class, 'store']);
     Route::get('/generations/{id}/status', [\App\Http\Controllers\GenerationController::class, 'status']);
     Route::delete('/generations/{id}', [\App\Http\Controllers\GenerationController::class, 'destroy']);
+
+    Route::post('/domains', [\App\Http\Controllers\DomainController::class, 'store']);
+    Route::delete('/domains/{id}', [\App\Http\Controllers\DomainController::class, 'destroy']);
 });

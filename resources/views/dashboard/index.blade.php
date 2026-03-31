@@ -53,6 +53,7 @@
 
 {{-- Modallar (Açılır Pencereler) --}}
 @include('dashboard.modals.tryon')
+@include('dashboard.modals.domain-add')
 
 @endsection
 

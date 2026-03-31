@@ -158,5 +158,23 @@
 
 ,
 "show_more": "Show More →",
-"show_prev": "← Back"
+"show_prev": "← Back",
+"domains_tab_desc": "Your registered or pending domains.",
+"add_domain": "+ Add Domain",
+"domain_api_key": "API Key",
+"domain_copy_key": "Copy API Key",
+"delete": "Delete",
+"add_domain_title": "Create Domain Request",
+"add_domain_sub": "Enter your domain name, choose an extension and registration period. It will be activated after admin approval.",
+"domain_input_label": "Domain Name",
+"domain_input_placeholder": "mywebsite",
+"domain_years_label": "Registration Period",
+"year": "Year",
+"cancel": "Cancel",
+"domain_submit": "Submit Request",
+"domain_name_required": "Please enter a domain name.",
+"domain_name_invalid": "Domain name can only contain letters, numbers, and hyphens (-).",
+"domain_delete_confirm": "Are you sure you want to delete this domain request?",
+"error_generic": "An error occurred. Please try again.",
+"insufficient_credits": "Insufficient credit balance."
 }

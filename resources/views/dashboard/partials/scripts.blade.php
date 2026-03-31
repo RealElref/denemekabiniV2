@@ -301,6 +301,161 @@ function updateCustomPrice() {
     document.getElementById('custom-credit-btn').href = '{{ route("dashboard.credits") }}?amount=' + amount;
 }
 
+// ── DOMAIN MODAL ──────────────────────────────────────────────
+let selectedYear = 1;
+
+function openDomainModal() {
+    document.getElementById('domain-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('domain-modal-error').style.display   = 'none';
+    document.getElementById('domain-modal-success').style.display = 'none';
+    document.getElementById('domain-name-input').value = '';
+    document.getElementById('domain-tld-input').value  = '.com';
+    document.getElementById('domain-preview').innerText = '';
+    selectedYear = 1;
+    document.querySelectorAll('.year-btn').forEach(b => {
+        b.dataset.active = b.dataset.year == '1' ? '1' : '0';
+        b.style.borderColor = b.dataset.year == '1' ? 'var(--primary)' : 'var(--glass-border)';
+        b.style.color       = b.dataset.year == '1' ? 'var(--text-bright)' : 'var(--text-muted)';
+        b.style.background  = b.dataset.year == '1' ? 'rgba(59,130,246,0.12)' : '';
+    });
+    const btn = document.getElementById('domain-submit-btn');
+    if (btn) { btn.disabled = false; btn.innerText = '{{ __("domain_submit") }}'; }
+}
+
+function closeDomainModal() {
+    document.getElementById('domain-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function selectYear(yr) {
+    selectedYear = yr;
+    document.querySelectorAll('.year-btn').forEach(b => {
+        const active = parseInt(b.dataset.year) === yr;
+        b.dataset.active    = active ? '1' : '0';
+        b.style.borderColor = active ? 'var(--primary)' : 'var(--glass-border)';
+        b.style.color       = active ? 'var(--text-bright)' : 'var(--text-muted)';
+        b.style.background  = active ? 'rgba(59,130,246,0.12)' : '';
+    });
+}
+
+function updateYearSelect() {}
+
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameInput = document.getElementById('domain-name-input');
+        const tldInput  = document.getElementById('domain-tld-input');
+        if (nameInput && tldInput) {
+            function updatePreview() {
+                const name = nameInput.value.trim();
+                const tld  = tldInput.value;
+                const prev = document.getElementById('domain-preview');
+                prev.innerText = name ? name + tld : '';
+            }
+            nameInput.addEventListener('input', updatePreview);
+            tldInput.addEventListener('change', updatePreview);
+        }
+    });
+})();
+
+async function submitDomain(e) {
+    e.preventDefault();
+    const name  = document.getElementById('domain-name-input').value.trim();
+    const tld   = document.getElementById('domain-tld-input').value;
+    const errEl = document.getElementById('domain-modal-error');
+    const sucEl = document.getElementById('domain-modal-success');
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+
+    if (!name) {
+        errEl.innerText     = '{{ __("domain_name_required") }}';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (!/^[a-z0-9\-]+$/i.test(name)) {
+        errEl.innerText     = '{{ __("domain_name_invalid") }}';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('domain-submit-btn');
+    btn.disabled  = true;
+    btn.innerText = '{{ __("processing") }}';
+
+    try {
+        const res  = await fetch('/api/domains', {
+            method:  'POST',
+            headers: {
+                'Content-Type':     'application/json',
+                'X-CSRF-TOKEN':     '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ domain_name: name, tld, registration_years: selectedYear }),
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            errEl.innerText     = data.message || '{{ __("error_generic") }}';
+            errEl.style.display = 'block';
+            btn.disabled  = false;
+            btn.innerText = '{{ __("domain_submit") }}';
+            return;
+        }
+
+        sucEl.innerText     = data.message;
+        sucEl.style.display = 'block';
+        btn.innerText       = '✓';
+
+        setTimeout(() => {
+            closeDomainModal();
+            loadPage('/panel', 'tab-domains', 'tab-domains');
+        }, 1400);
+
+    } catch (err) {
+        errEl.innerText     = '{{ __("error_generic") }}';
+        errEl.style.display = 'block';
+        btn.disabled  = false;
+        btn.innerText = '{{ __("domain_submit") }}';
+    }
+}
+
+async function deleteDomain(id, btn) {
+    if (!confirm('{{ __("domain_delete_confirm") }}')) return;
+    btn.disabled = true;
+    try {
+        const res  = await fetch('/api/domains/' + id, {
+            method:  'DELETE',
+            headers: {
+                'X-CSRF-TOKEN':     '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        });
+        const data = await res.json();
+        if (data.success) {
+            btn.closest('tr').style.opacity    = '0';
+            btn.closest('tr').style.transition = 'opacity 0.3s';
+            setTimeout(() => loadPage('/panel', 'tab-domains', 'tab-domains'), 350);
+        }
+    } catch {}
+}
+
+function copyDomainKey(el) {
+    const key = el.dataset.key;
+    navigator.clipboard.writeText(key).then(() => {
+        const orig = el.innerText;
+        el.style.color       = '#34D399';
+        el.style.borderColor = '#34D399';
+        el.innerText         = '{{ __("copied") }}';
+        setTimeout(() => {
+            el.style.color       = '';
+            el.style.borderColor = '';
+            el.innerText         = orig;
+        }, 1800);
+    });
+}
+
 function adjustCredit(delta) {
     const input = document.getElementById('custom-credit-amount');
     const val = Math.max(1, Math.min(1000, (parseInt(input.value) || 1) + delta));

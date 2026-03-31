@@ -159,5 +159,23 @@
 
 ,
 "show_more": "Devamını Göster →",
-"show_prev": "← Geri"
+"show_prev": "← Geri",
+"domains_tab_desc": "Kayıtlı veya onay bekleyen domainleriniz.",
+"add_domain": "+ Domain Ekle",
+"domain_api_key": "API Key",
+"domain_copy_key": "API Anahtarını kopyala",
+"delete": "Sil",
+"add_domain_title": "Domain Talebi Oluştur",
+"add_domain_sub": "Domain adınızı girin, uzantı ve süreyi seçin. Admin onayı sonrası aktifleşir.",
+"domain_input_label": "Domain Adı",
+"domain_input_placeholder": "orneksite",
+"domain_years_label": "Kayıt Süresi",
+"year": "Yıl",
+"cancel": "Vazgeç",
+"domain_submit": "Talep Gönder",
+"domain_name_required": "Lütfen bir domain adı girin.",
+"domain_name_invalid": "Domain adı yalnızca harf, rakam ve tire (-) içerebilir.",
+"domain_delete_confirm": "Bu domain talebini silmek istediğinize emin misiniz?",
+"error_generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
+"insufficient_credits": "Yetersiz kredi bakiyesi."
 }
