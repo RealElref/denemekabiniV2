@@ -94,8 +94,4 @@ class User extends Authenticatable implements FilamentUser
         return $this->credit_balance >= $amount;
     }
 
-    public function user()
-{
-    return $this->belongsTo(User::class);
-}
 }
