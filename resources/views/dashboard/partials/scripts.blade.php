@@ -295,10 +295,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateCustomPrice() {
-    const amount = parseInt(document.getElementById('custom-credit-amount').value) || 1;
+    const amountEl = document.getElementById('custom-credit-amount');
+    const priceEl  = document.getElementById('custom-credit-price');
+    const btnEl    = document.getElementById('custom-credit-btn');
+    if (!amountEl) return;
+    const amount = parseInt(amountEl.value) || 1;
     const price = (amount * 4.9).toFixed(2).replace('.', ',');
-    document.getElementById('custom-credit-price').innerText = price + ' ₺';
-    document.getElementById('custom-credit-btn').href = '{{ route("dashboard.credits") }}?amount=' + amount;
+    if (priceEl) priceEl.innerText = price + ' ₺';
+    if (btnEl)   btnEl.href = '{{ route("dashboard.credits") }}?amount=' + amount;
 }
 
 // ── DOMAIN MODAL ──────────────────────────────────────────────
@@ -458,13 +462,16 @@ function copyDomainKey(el) {
 
 function adjustCredit(delta) {
     const input = document.getElementById('custom-credit-amount');
+    if (!input) return;
     const val = Math.max(1, Math.min(1000, (parseInt(input.value) || 1) + delta));
     input.value = val;
     updateCustomPrice();
 }
 
 function setCredit(val) {
-    document.getElementById('custom-credit-amount').value = val;
+    const input = document.getElementById('custom-credit-amount');
+    if (!input) return;
+    input.value = val;
     updateCustomPrice();
 }
 
