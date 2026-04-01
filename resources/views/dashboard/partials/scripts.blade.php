@@ -369,7 +369,8 @@ function updateYearSelect() {}
 async function submitDomain(e) {
     e.preventDefault();
     const name  = document.getElementById('domain-name-input').value.trim();
-    const tld   = document.getElementById('domain-tld-input').value;
+    let tld     = document.getElementById('domain-tld-input').value.trim().toLowerCase();
+    if (tld && !tld.startsWith('.')) tld = '.' + tld;
     const errEl = document.getElementById('domain-modal-error');
     const sucEl = document.getElementById('domain-modal-success');
     errEl.style.display = 'none';
