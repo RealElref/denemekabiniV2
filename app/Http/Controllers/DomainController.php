@@ -12,7 +12,7 @@ class DomainController extends Controller
     {
         $request->validate([
             'domain_name'        => 'required|string|max:63|regex:/^[a-z0-9\-]+$/i',
-            'tld'                => 'required|string|in:.com,.net,.org,.com.tr,.net.tr,.org.tr,.tr,.io,.co',
+            'tld'                => 'required|string|in:.com,.net,.org,.com.tr,.net.tr,.org.tr,.tr,.io,.co,.app,.dev,.site,.store',
             'registration_years' => 'required|integer|in:1,2,3,5',
         ]);
 

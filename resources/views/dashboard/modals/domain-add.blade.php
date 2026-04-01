@@ -1,4 +1,4 @@
-<div id="domain-modal" style="display:none;position:fixed;inset:0;z-index:2100;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px)">
+<div id="domain-modal" onclick="if(event.target===this)closeDomainModal()" style="display:none;position:fixed;inset:0;z-index:2100;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px)">
     <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:480px;margin:1rem;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
 
         <button onclick="closeDomainModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;line-height:1;padding:0.2rem 0.5rem;border-radius:6px;transition:var(--transition)" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='none'">&times;</button>
@@ -34,12 +34,16 @@
                         <option value=".com">.com</option>
                         <option value=".net">.net</option>
                         <option value=".org">.org</option>
+                        <option value=".io">.io</option>
+                        <option value=".co">.co</option>
+                        <option value=".app">.app</option>
+                        <option value=".dev">.dev</option>
+                        <option value=".site">.site</option>
+                        <option value=".store">.store</option>
                         <option value=".com.tr">.com.tr</option>
                         <option value=".net.tr">.net.tr</option>
                         <option value=".org.tr">.org.tr</option>
                         <option value=".tr">.tr</option>
-                        <option value=".io">.io</option>
-                        <option value=".co">.co</option>
                     </select>
                 </div>
                 <p id="domain-preview" style="font-size:0.78rem;color:var(--text-muted);margin:0.4rem 0 0;font-family:monospace"></p>

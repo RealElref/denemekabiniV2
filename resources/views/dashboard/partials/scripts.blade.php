@@ -250,7 +250,13 @@ function refreshStudio() {
 });
 
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeTryOn();
+    if (e.key === 'Escape') {
+        if (document.getElementById('domain-modal')?.style.display === 'flex') {
+            closeDomainModal();
+        } else {
+            closeTryOn();
+        }
+    }
 });
 
 function copyRef(el) {
@@ -427,7 +433,7 @@ async function submitDomain(e) {
 
         setTimeout(() => {
             closeDomainModal();
-            loadPage('/panel', 'tab-domains', 'tab-domains');
+            loadDomainsTab();
         }, 1400);
 
     } catch (err) {
@@ -447,6 +453,7 @@ async function deleteDomain(id, btn) {
             headers: {
                 'X-CSRF-TOKEN':     '{{ csrf_token() }}',
                 'X-Requested-With': 'XMLHttpRequest',
+                'Accept':           'application/json',
             },
             credentials: 'same-origin',
         });
@@ -454,9 +461,41 @@ async function deleteDomain(id, btn) {
         if (data.success) {
             btn.closest('tr').style.opacity    = '0';
             btn.closest('tr').style.transition = 'opacity 0.3s';
-            setTimeout(() => loadPage('/panel', 'tab-domains', 'tab-domains'), 350);
+            setTimeout(() => loadDomainsTab(), 350);
         }
     } catch {}
+}
+
+function loadDomainsTab() {
+    sessionStorage.setItem('activeTab', 'tab-domains');
+    const container = document.getElementById('tab-domains');
+    if (!container) return;
+    container.style.opacity    = '0.5';
+    container.style.transition = 'opacity 0.2s';
+
+    fetch('/panel/domains-partial', {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'text/html',
+        },
+        credentials: 'same-origin',
+    })
+    .then(res => res.text())
+    .then(html => {
+        const parser     = new DOMParser();
+        const doc        = parser.parseFromString(html, 'text/html');
+        const newContent = doc.getElementById('tab-domains');
+        if (newContent) {
+            container.innerHTML    = newContent.innerHTML;
+            container.style.opacity = '1';
+        } else {
+            container.innerHTML    = html;
+            container.style.opacity = '1';
+        }
+    })
+    .catch(() => {
+        container.style.opacity = '1';
+    });
 }
 
 function copyDomainKey(el) {

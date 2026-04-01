@@ -42,6 +42,16 @@ class DashboardController extends Controller
         ));
     }
 
+    public function domainsPartial(Request $request)
+    {
+        $user    = Auth::user();
+        $domains = $user->domains()
+            ->latest()
+            ->paginate(3, ['*'], 'domain_page');
+
+        return view('dashboard.tabs.domains', compact('domains'));
+    }
+
     public function credits()
     {
         $user     = Auth::user();

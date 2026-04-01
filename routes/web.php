@@ -36,6 +36,7 @@ Route::middleware(['auth', 'guest-only'])->group(function () {
     Route::get('/odeme/basarisiz', [PaymentController::class, 'failed'])->name('payment.failed');
 
     Route::get('/panel', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/panel/domains-partial', [DashboardController::class, 'domainsPartial'])->name('dashboard.domains.partial');
     Route::get('/panel/kredi-al', [\App\Http\Controllers\CustomCreditController::class, 'show'])->name('dashboard.credits');
     Route::post('/panel/kredi-al', [\App\Http\Controllers\CustomCreditController::class, 'process'])->name('dashboard.credits.process');
 
