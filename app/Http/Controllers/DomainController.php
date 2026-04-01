@@ -37,6 +37,8 @@ class DomainController extends Controller
             ]);
         }
 
+        $registeredAt = now();
+
         Domain::create([
             'user_id'            => $user->id,
             'domain_name'        => strtolower($request->domain_name),
@@ -45,6 +47,8 @@ class DomainController extends Controller
             'status'             => 'pending',
             'credits_used'       => 0,
             'price_paid'         => 0,
+            'registered_at'      => $registeredAt,
+            'expires_at'         => $registeredAt->copy()->addYears((int) $request->registration_years),
         ]);
 
         return response()->json([
