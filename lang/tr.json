@@ -180,5 +180,12 @@
 "insufficient_credits": "Yetersiz kredi bakiyesi.",
 "domain_already_exists": "Bu domain zaten eklenmiş veya onay bekliyor.",
 "domain_submitted": "Domain talebiniz başarıyla oluşturuldu. Admin onayı bekleniyor.",
-"domain_delete_not_found": "Bu domain talebi bulunamadı veya silinemiyor."
+"domain_delete_not_found": "Bu domain talebi bulunamadı veya silinemiyor.",
+"domain_expires_on": "Bitiş tarihi",
+"embed_code": "Embed Kodu",
+"embed_script_tag": "Script Etiketi (</head> öncesine ekle)",
+"embed_instructions": "Bu kodu sitenizin </head> kapanış etiketinden önce ekleyin. Script otomatik olarak sayfadaki kıyafet görsellerini bulup \"Dene\" butonunu ekler.",
+"embed_manual_button": "Manuel Yerleştirme (isteğe bağlı)",
+"close": "Kapat",
+"copy": "Kopyala"
 }

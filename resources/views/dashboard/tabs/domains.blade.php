@@ -44,11 +44,18 @@
                             @endif
                         </td>
                         <td style="text-align:right">
-                            @if(in_array($domain->status, ['pending', 'rejected']))
-                                <button onclick="deleteDomain({{ $domain->id }}, this)" style="background:none;border:1px solid rgba(239,68,68,0.3);color:#EF4444;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;transition:var(--transition)" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='none'">
-                                    {{ __('delete') }}
-                                </button>
-                            @endif
+                            <div style="display:flex;gap:0.4rem;justify-content:flex-end;align-items:center;flex-wrap:wrap">
+                                @if($domain->status === 'active' && $domain->api_key)
+                                    <button onclick="showEmbedCode('{{ addslashes($domain->api_key) }}', '{{ addslashes($domain->full_domain) }}')" style="background:none;border:1px solid rgba(59,130,246,0.35);color:#3B82F6;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;transition:var(--transition)" onmouseover="this.style.background='rgba(59,130,246,0.1)'" onmouseout="this.style.background='none'">
+                                        &lt;/&gt; {{ __('embed_code') }}
+                                    </button>
+                                @endif
+                                @if(in_array($domain->status, ['pending', 'rejected']))
+                                    <button onclick="deleteDomain({{ $domain->id }}, this)" style="background:none;border:1px solid rgba(239,68,68,0.3);color:#EF4444;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;transition:var(--transition)" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='none'">
+                                        {{ __('delete') }}
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach

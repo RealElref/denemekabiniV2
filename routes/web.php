@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmbedController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PaymentController;
 
@@ -36,7 +37,7 @@ Route::middleware(['auth', 'guest-only'])->group(function () {
     Route::get('/odeme/basarisiz', [PaymentController::class, 'failed'])->name('payment.failed');
 
     Route::get('/panel', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/panel/domains-partial', [DashboardController::class, 'domainsPartial'])->name('dashboard.domains.partial');
+    Route::get('/panel/domains-partial', [\App\Http\Controllers\DomainController::class, 'partial'])->name('dashboard.domains.partial');
     Route::get('/panel/kredi-al', [\App\Http\Controllers\CustomCreditController::class, 'show'])->name('dashboard.credits');
     Route::post('/panel/kredi-al', [\App\Http\Controllers\CustomCreditController::class, 'process'])->name('dashboard.credits.process');
 
@@ -47,6 +48,12 @@ Route::middleware(['auth', 'guest-only'])->group(function () {
     Route::post('/odeme/webhook', [PaymentController::class, 'webhook'])->name('payment.webhook')->withoutMiddleware(['auth', 'guest-only']);
 });
 
+
+// ── Embed / Public Widget Routes ─────────────────────────────
+Route::get('/embed.js', [EmbedController::class, 'script'])->name('embed.script');
+Route::get('/dene', [EmbedController::class, 'tryPage'])->name('embed.try');
+Route::post('/embed/start', [EmbedController::class, 'startGeneration'])->name('embed.start');
+Route::get('/embed/status/{id}', [EmbedController::class, 'pollStatus'])->name('embed.status');
 
 Route::get('/lang/{locale}', function (string $locale) {
     if (in_array($locale, ['tr', 'en'])) {

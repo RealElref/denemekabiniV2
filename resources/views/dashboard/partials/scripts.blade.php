@@ -570,17 +570,46 @@ function loadPage(url, targetId, tabId) {
 }
 
 function changePerPage(amount) {
-    // Mevcut sayfanın URL'sini al
     const currentUrl = new URL(window.location.href);
-    
-    // 'per_page' parametresini seçilen değere ayarla
     currentUrl.searchParams.set('per_page', amount);
-    
-    // Gösterim sayısı değiştiğinde her zaman 1. sayfaya dönmek en sağlıklısıdır
-    currentUrl.searchParams.set('gen_page', 1); 
-    
-    // Senin mevcut AJAX fonksiyonun ile history sekmesini güncelle
+    currentUrl.searchParams.set('gen_page', 1);
     loadPage(currentUrl.toString(), 'tab-history', 'tab-history');
+}
+
+// ── EMBED CODE MODAL ──────────────────────────────────────────
+function showEmbedCode(apiKey, domainName) {
+    const baseUrl   = '{{ rtrim(config("app.url"), "/") }}';
+    const snippet   = `<script src="${baseUrl}/embed.js?key=${apiKey}" async><\/script>`;
+    const btnSnippet = `<img src="KIYAFET_GORSEL_URL" data-wiro-garment="KIYAFET_GORSEL_URL" alt="${domainName}">\n<!-- Yukarıdaki img etiketime data-wiro-garment ekleyin -->`;
+
+    document.getElementById('embed-modal-domain').innerText = domainName;
+    document.getElementById('embed-code-snippet').innerText = snippet;
+    document.getElementById('embed-btn-snippet').innerText  = btnSnippet;
+    document.getElementById('embed-code-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEmbedModal() {
+    document.getElementById('embed-code-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function copyEmbedCode() {
+    const text = document.getElementById('embed-code-snippet').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('embed-copy-btn');
+        btn.innerText = '{{ __("copied") }}';
+        setTimeout(() => { btn.innerText = '{{ __("copy") }}'; }, 2000);
+    });
+}
+
+function copyEmbedBtn() {
+    const text = document.getElementById('embed-btn-snippet').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('embed-btn-copy-btn');
+        btn.innerText = '{{ __("copied") }}';
+        setTimeout(() => { btn.innerText = '{{ __("copy") }}'; }, 2000);
+    });
 }
 
 </script>

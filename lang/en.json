@@ -179,5 +179,12 @@
 "insufficient_credits": "Insufficient credit balance.",
 "domain_already_exists": "This domain has already been added or is awaiting approval.",
 "domain_submitted": "Your domain request has been successfully submitted. Awaiting admin approval.",
-"domain_delete_not_found": "This domain request could not be found or cannot be deleted."
+"domain_delete_not_found": "This domain request could not be found or cannot be deleted.",
+"domain_expires_on": "Expires on",
+"embed_code": "Embed Code",
+"embed_script_tag": "Script Tag (add before </head>)",
+"embed_instructions": "Add this code to your site before the closing </head> tag. The script automatically finds clothing images on the page and adds a \"Try\" button.",
+"embed_manual_button": "Manual Button Placement (optional)",
+"close": "Close",
+"copy": "Copy"
 }
