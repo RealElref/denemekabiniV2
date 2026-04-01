@@ -361,7 +361,7 @@ function updateYearSelect() {}
                 prev.innerText = name ? name + tld : '';
             }
             nameInput.addEventListener('input', updatePreview);
-            tldInput.addEventListener('change', updatePreview);
+            tldInput.addEventListener('input', updatePreview);
         }
     });
 })();

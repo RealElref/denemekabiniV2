@@ -25,26 +25,37 @@
                         onfocus="this.style.borderColor='var(--primary)'"
                         onblur="this.style.borderColor='var(--glass-border)'"
                     >
-                    <select
+                    <input
+                        type="text"
                         id="domain-tld-input"
-                        style="background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);border-radius:8px;padding:0.6rem 0.75rem;color:var(--text-bright);font-size:0.85rem;font-family:monospace;outline:none;cursor:pointer;min-width:100px;transition:var(--transition)"
+                        list="tld-suggestions"
+                        value=".com"
+                        placeholder=".com"
+                        autocomplete="off"
+                        spellcheck="false"
+                        style="width:110px;flex:none;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);border-radius:8px;padding:0.6rem 0.75rem;color:var(--text-bright);font-size:0.85rem;font-family:monospace;outline:none;transition:var(--transition)"
                         onfocus="this.style.borderColor='var(--primary)'"
                         onblur="this.style.borderColor='var(--glass-border)'"
                     >
-                        <option value=".com">.com</option>
-                        <option value=".net">.net</option>
-                        <option value=".org">.org</option>
-                        <option value=".io">.io</option>
-                        <option value=".co">.co</option>
-                        <option value=".app">.app</option>
-                        <option value=".dev">.dev</option>
-                        <option value=".site">.site</option>
-                        <option value=".store">.store</option>
-                        <option value=".com.tr">.com.tr</option>
-                        <option value=".net.tr">.net.tr</option>
-                        <option value=".org.tr">.org.tr</option>
-                        <option value=".tr">.tr</option>
-                    </select>
+                    <datalist id="tld-suggestions">
+                        <option value=".com">
+                        <option value=".net">
+                        <option value=".org">
+                        <option value=".io">
+                        <option value=".co">
+                        <option value=".app">
+                        <option value=".dev">
+                        <option value=".site">
+                        <option value=".store">
+                        <option value=".online">
+                        <option value=".tech">
+                        <option value=".info">
+                        <option value=".biz">
+                        <option value=".com.tr">
+                        <option value=".net.tr">
+                        <option value=".org.tr">
+                        <option value=".tr">
+                    </datalist>
                 </div>
                 <p id="domain-preview" style="font-size:0.78rem;color:var(--text-muted);margin:0.4rem 0 0;font-family:monospace"></p>
             </div>
