@@ -391,14 +391,30 @@ async function submitDomain(e) {
                 'Content-Type':     'application/json',
                 'X-CSRF-TOKEN':     '{{ csrf_token() }}',
                 'X-Requested-With': 'XMLHttpRequest',
+                'Accept':           'application/json',
             },
             credentials: 'same-origin',
             body: JSON.stringify({ domain_name: name, tld, registration_years: selectedYear }),
         });
-        const data = await res.json();
 
-        if (!data.success) {
-            errEl.innerText     = data.message || '{{ __("error_generic") }}';
+        let data;
+        try {
+            data = await res.json();
+        } catch (parseErr) {
+            errEl.innerText     = 'Sunucu hatası (HTTP ' + res.status + '). Lütfen tekrar deneyin.';
+            errEl.style.display = 'block';
+            btn.disabled  = false;
+            btn.innerText = '{{ __("domain_submit") }}';
+            return;
+        }
+
+        if (!res.ok || !data.success) {
+            if (data.errors) {
+                const firstError = Object.values(data.errors)[0];
+                errEl.innerText = Array.isArray(firstError) ? firstError[0] : firstError;
+            } else {
+                errEl.innerText = data.message || '{{ __("error_generic") }}';
+            }
             errEl.style.display = 'block';
             btn.disabled  = false;
             btn.innerText = '{{ __("domain_submit") }}';
@@ -415,7 +431,7 @@ async function submitDomain(e) {
         }, 1400);
 
     } catch (err) {
-        errEl.innerText     = '{{ __("error_generic") }}';
+        errEl.innerText     = 'Bağlantı hatası: ' + err.message;
         errEl.style.display = 'block';
         btn.disabled  = false;
         btn.innerText = '{{ __("domain_submit") }}';
