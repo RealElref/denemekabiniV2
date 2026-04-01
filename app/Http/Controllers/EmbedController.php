@@ -155,12 +155,28 @@ JS;
     public function tryPage(Request $request)
     {
         $domainId   = $request->query('domain_id');
+        $domainName = $request->query('domain');
         $garmentUrl = $request->query('garment_url', '');
         $ref        = $request->query('ref', '');
 
-        $domain = Domain::where('id', $domainId)
-            ->where('status', 'active')
-            ->first();
+        $query = Domain::where('status', 'active');
+
+        if ($domainId) {
+            $query->where('id', $domainId);
+        } elseif ($domainName) {
+            $fullDomain = $domainName;
+            $parts = explode('.', $fullDomain, 2);
+            if (count($parts) === 2) {
+                $query->where('domain_name', $parts[0])
+                      ->where('tld', '.' . $parts[1]);
+            } else {
+                $query->where('domain_name', $fullDomain);
+            }
+        } else {
+            abort(403, 'Bu servis bu domain için aktif değil.');
+        }
+
+        $domain = $query->first();
 
         if (!$domain) {
             abort(403, 'Bu servis bu domain için aktif değil.');
