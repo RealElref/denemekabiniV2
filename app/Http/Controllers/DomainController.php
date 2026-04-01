@@ -10,9 +10,15 @@ class DomainController extends Controller
 {
     public function store(Request $request)
     {
+        $tld = strtolower(trim($request->input('tld', '')));
+        if ($tld && !str_starts_with($tld, '.')) {
+            $tld = '.' . $tld;
+        }
+        $request->merge(['tld' => $tld]);
+
         $request->validate([
             'domain_name'        => 'required|string|max:63|regex:/^[a-z0-9\-]+$/i',
-            'tld'                => ['required', 'string', 'max:20', 'regex:/^\.[a-z0-9\-]{2,}(\.[a-z0-9\-]{2,})?$/i'],
+            'tld'                => ['required', 'string', 'max:20', 'regex:/^\.[a-z0-9]{2,}(\.[a-z0-9]{2,})?$/'],
             'registration_years' => 'required|integer|in:1,2,3,5',
         ]);
 

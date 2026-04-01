@@ -47,10 +47,15 @@
                         <option value=".dev">
                         <option value=".site">
                         <option value=".store">
+                        <option value=".shop">
+                        <option value=".space">
                         <option value=".online">
                         <option value=".tech">
                         <option value=".info">
                         <option value=".biz">
+                        <option value=".ai">
+                        <option value=".me">
+                        <option value=".pro">
                         <option value=".com.tr">
                         <option value=".net.tr">
                         <option value=".org.tr">
