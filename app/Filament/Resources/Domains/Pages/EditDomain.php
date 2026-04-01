@@ -22,4 +22,16 @@ class EditDomain extends EditRecord
             RestoreAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $domain = $this->record;
+
+        if ($domain->status === 'active' && is_null($domain->registered_at)) {
+            $registeredAt = now();
+            $domain->registered_at = $registeredAt;
+            $domain->expires_at    = $registeredAt->copy()->addYears($domain->registration_years ?? 1);
+            $domain->save();
+        }
+    }
 }

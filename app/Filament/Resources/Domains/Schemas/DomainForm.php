@@ -81,9 +81,11 @@ class DomainForm
                         ->label('Admin Notu')
                         ->rows(3),
                     DateTimePicker::make('registered_at')
-                        ->label('Kayıt Tarihi'),
+                        ->label('Kayıt Tarihi')
+                        ->helperText('Boş bırakılırsa durum "Aktif" yapıldığında otomatik ayarlanır.'),
                     DateTimePicker::make('expires_at')
-                        ->label('Bitiş Tarihi'),
+                        ->label('Bitiş Tarihi')
+                        ->helperText('Boş bırakılırsa kayıt tarihine + kayıt yılı kadar otomatik hesaplanır.'),
                 ]),
         ]);
     }
