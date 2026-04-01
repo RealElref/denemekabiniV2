@@ -55,8 +55,6 @@
 @include('dashboard.modals.tryon')
 @include('dashboard.modals.domain-add')
 
-@endsection
+@include('dashboard.partials.scripts')
 
-@push('scripts')
-    @include('dashboard.partials.scripts')
-@endpush
+@endsection
