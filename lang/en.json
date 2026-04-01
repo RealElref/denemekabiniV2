@@ -178,5 +178,6 @@
 "error_generic": "An error occurred. Please try again.",
 "insufficient_credits": "Insufficient credit balance.",
 "domain_already_exists": "This domain has already been added or is awaiting approval.",
-"domain_submitted": "Your domain request has been successfully submitted. Awaiting admin approval."
+"domain_submitted": "Your domain request has been successfully submitted. Awaiting admin approval.",
+"domain_delete_not_found": "This domain request could not be found or cannot be deleted."
 }

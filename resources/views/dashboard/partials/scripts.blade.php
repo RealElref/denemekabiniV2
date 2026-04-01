@@ -458,13 +458,28 @@ async function deleteDomain(id, btn) {
             },
             credentials: 'same-origin',
         });
+        if (res.status === 404) {
+            btn.disabled = false;
+            alert('{{ __("domain_delete_not_found") }}');
+            loadDomainsTab();
+            return;
+        }
         const data = await res.json();
         if (data.success) {
-            btn.closest('tr').style.opacity    = '0';
-            btn.closest('tr').style.transition = 'opacity 0.3s';
+            const row = btn.closest('tr');
+            if (row) {
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity    = '0';
+            }
             setTimeout(() => loadDomainsTab(), 350);
+        } else {
+            btn.disabled = false;
+            alert(data.message || '{{ __("error_generic") }}');
         }
-    } catch {}
+    } catch (e) {
+        btn.disabled = false;
+        console.error('deleteDomain error:', e);
+    }
 }
 
 function loadDomainsTab() {
