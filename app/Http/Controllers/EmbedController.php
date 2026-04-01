@@ -159,24 +159,40 @@ JS;
         $garmentUrl = $request->query('garment_url', '');
         $ref        = $request->query('ref', '');
 
-        $query = Domain::where('status', 'active');
-
         if ($domainId) {
-            $query->where('id', $domainId);
+            $domain = Domain::where('id', $domainId)
+                ->where('status', 'active')
+                ->first();
         } elseif ($domainName) {
-            $fullDomain = $domainName;
-            $parts = explode('.', $fullDomain, 2);
+            $lower = strtolower($domainName);
+            $parts = explode('.', $lower, 2);
+
+            $domain = null;
+
             if (count($parts) === 2) {
-                $query->where('domain_name', $parts[0])
-                      ->where('tld', '.' . $parts[1]);
-            } else {
-                $query->where('domain_name', $fullDomain);
+                $domain = Domain::whereRaw('LOWER(domain_name) = ?', [$parts[0]])
+                    ->whereRaw('LOWER(tld) = ?', ['.' . $parts[1]])
+                    ->where('status', 'active')
+                    ->first();
+            }
+
+            if (!$domain) {
+                $domain = Domain::whereRaw("LOWER(CONCAT(domain_name, tld)) = ?", [$lower])
+                    ->where('status', 'active')
+                    ->first();
+            }
+
+            if (!$domain) {
+                $allDomains = Domain::select('id', 'domain_name', 'tld', 'status')->get();
+                Log::warning('tryPage domain not found', [
+                    'requested'  => $domainName,
+                    'all_active' => $allDomains->where('status', 'active')->values()->toArray(),
+                    'all'        => $allDomains->toArray(),
+                ]);
             }
         } else {
             abort(403, 'Bu servis bu domain için aktif değil.');
         }
-
-        $domain = $query->first();
 
         if (!$domain) {
             abort(403, 'Bu servis bu domain için aktif değil.');
