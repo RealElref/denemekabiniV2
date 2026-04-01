@@ -197,9 +197,12 @@ function switchTabById(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
-    const tabIndex = {'tab-history':0,'tab-transactions':1,'tab-domains':2,'tab-credits':3};
-    const idx = tabIndex[tabId];
-    if (idx !== undefined) document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+    const tabMap = {'tab-history':'tab-history','tab-transactions':'tab-transactions','tab-domains':'tab-domains','tab-credits':'tab-credits'};
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId)) {
+            b.classList.add('active');
+        }
+    });
     sessionStorage.setItem('activeTab', tabId);
 }
 
@@ -281,16 +284,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(savedTab).classList.add('active');
-        const tabIndex = {
-            'tab-history': 0,
-            'tab-transactions': 1,
-            'tab-domains': 2,
-            'tab-credits': 3
-        };
-        const idx = tabIndex[savedTab];
-        if (idx !== undefined) {
-            document.querySelectorAll('.tab-btn')[idx].classList.add('active');
-        }
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(savedTab)) {
+                b.classList.add('active');
+            }
+        });
     }
 });
 

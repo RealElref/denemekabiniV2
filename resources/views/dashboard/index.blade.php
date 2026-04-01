@@ -35,21 +35,6 @@
 
 </div>
 
-<div id="tab-index" class="tab-content">
-    
-    <div id="index-ios-menu" class="index-preview-hidden">
-        <button class="close-preview-btn" onclick="closeIndexMenu()">&times;</button>
-        
-        <div class="preview-content">
-            <img id="index-preview-img" src="" alt="Seçilen Görsel">
-            <div class="preview-details">
-                <h3>Görsel Detayları</h3>
-                <p id="index-preview-desc">Açıklama yükleniyor...</p>
-            </div>
-        </div>
-    </div>
-
-</div>
 
 {{-- Modallar (Açılır Pencereler) --}}
 @include('dashboard.modals.tryon')
