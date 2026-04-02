@@ -52,8 +52,12 @@ Route::middleware(['auth', 'guest-only'])->group(function () {
 // ── Embed / Public Widget Routes ─────────────────────────────
 Route::get('/embed.js', [EmbedController::class, 'script'])->name('embed.script');
 Route::get('/dene', [EmbedController::class, 'tryPage'])->name('embed.try');
-Route::post('/embed/start', [EmbedController::class, 'startGeneration'])->name('embed.start');
-Route::get('/embed/status/{id}', [EmbedController::class, 'pollStatus'])->name('embed.status');
+Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])->group(function () {
+    Route::post('/embed/start', [EmbedController::class, 'startGeneration'])->name('embed.start');
+    Route::options('/embed/start', [EmbedController::class, 'startGeneration']);
+    Route::get('/embed/status/{id}', [EmbedController::class, 'pollStatus'])->name('embed.status');
+    Route::options('/embed/status/{id}', [EmbedController::class, 'pollStatus']);
+});
 
 Route::get('/lang/{locale}', function (string $locale) {
     if (in_array($locale, ['tr', 'en'])) {

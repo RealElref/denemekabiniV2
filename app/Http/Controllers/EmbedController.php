@@ -18,8 +18,21 @@ class EmbedController extends Controller
         $this->wiro = $wiro;
     }
 
+    private function corsHeaders(): array
+    {
+        return [
+            'Access-Control-Allow-Origin'  => '*',
+            'Access-Control-Allow-Methods' => 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Content-Type, X-Requested-With, X-CSRF-TOKEN',
+        ];
+    }
+
     public function script(Request $request)
     {
+        if ($request->isMethod('OPTIONS')) {
+            return response('', 200, $this->corsHeaders());
+        }
+
         $apiKey = $request->query('key', '');
         $domain = Domain::where('api_key', $apiKey)
             ->where('status', 'active')
@@ -27,7 +40,7 @@ class EmbedController extends Controller
 
         if (!$domain) {
             $js = "console.error('[WiroEmbed] Geçersiz veya onaylanmamış API anahtarı.');";
-            return response($js, 403)->header('Content-Type', 'application/javascript');
+            return response($js, 403, $this->corsHeaders())->header('Content-Type', 'application/javascript');
         }
 
         $domainId = $domain->id;
@@ -303,7 +316,7 @@ class EmbedController extends Controller
 })();
 JS;
 
-        return response($js)->header('Content-Type', 'application/javascript');
+        return response($js, 200, array_merge($this->corsHeaders(), ['Content-Type' => 'application/javascript']));
     }
 
     public function tryPage(Request $request)
@@ -357,6 +370,10 @@ JS;
 
     public function startGeneration(Request $request)
     {
+        if ($request->isMethod('OPTIONS')) {
+            return response('', 200, $this->corsHeaders());
+        }
+
         $request->validate([
             'domain_id'     => 'required|integer',
             'garment_url'   => 'nullable|url|max:2048',
@@ -364,8 +381,10 @@ JS;
             'person_image'  => 'required|image|max:10240|mimes:jpg,jpeg,png,webp',
         ]);
 
+        $cors = $this->corsHeaders();
+
         if (!$request->filled('garment_url') && !$request->hasFile('garment_image')) {
-            return response()->json(['success' => false, 'message' => 'Kıyafet görseli veya dosyası gereklidir.'], 422);
+            return response()->json(['success' => false, 'message' => 'Kıyafet görseli veya dosyası gereklidir.'], 422, $cors);
         }
 
         $domain = Domain::where('id', $request->domain_id)
@@ -373,13 +392,13 @@ JS;
             ->first();
 
         if (!$domain) {
-            return response()->json(['success' => false, 'message' => 'Domain aktif değil veya bulunamadı.'], 403);
+            return response()->json(['success' => false, 'message' => 'Domain aktif değil veya bulunamadı.'], 403, $cors);
         }
 
         $owner = $domain->user;
 
         if ($owner->credit_balance < 1) {
-            return response()->json(['success' => false, 'message' => 'Domain sahibinin kredisi yetersiz. Lütfen site yöneticisiyle iletişime geçin.'], 422);
+            return response()->json(['success' => false, 'message' => 'Domain sahibinin kredisi yetersiz. Lütfen site yöneticisiyle iletişime geçin.'], 422, $cors);
         }
 
         try {
@@ -397,7 +416,7 @@ JS;
             } else {
                 $garmentContents = @file_get_contents($request->garment_url);
                 if ($garmentContents === false) {
-                    return response()->json(['success' => false, 'message' => 'Kıyafet görseli indirilemedi.'], 422);
+                    return response()->json(['success' => false, 'message' => 'Kıyafet görseli indirilemedi.'], 422, $cors);
                 }
                 $garmentPath = $folder . '/garment.jpg';
                 Storage::disk('public')->put($garmentPath, $garmentContents);
@@ -420,7 +439,7 @@ JS;
 
             if (!$result['success']) {
                 $generation->update(['status' => 'failed', 'error_message' => $result['error'], 'completed_at' => now()]);
-                return response()->json(['success' => false, 'message' => $result['error']], 500);
+                return response()->json(['success' => false, 'message' => $result['error']], 500, $cors);
             }
 
             $generation->update(['wiro_job_id' => $result['task_id']]);
@@ -433,19 +452,25 @@ JS;
             return response()->json([
                 'success'       => true,
                 'generation_id' => $generation->id,
-            ]);
+            ], 200, $cors);
 
         } catch (\Exception $e) {
             Log::error('EmbedController startGeneration exception', ['message' => $e->getMessage()]);
             if (isset($generation)) {
                 $generation->update(['status' => 'failed', 'error_message' => $e->getMessage(), 'completed_at' => now()]);
             }
-            return response()->json(['success' => false, 'message' => 'Sunucu hatası.'], 500);
+            return response()->json(['success' => false, 'message' => 'Sunucu hatası.'], 500, $cors);
         }
     }
 
     public function pollStatus(Request $request, int $id)
     {
+        if ($request->isMethod('OPTIONS')) {
+            return response('', 200, $this->corsHeaders());
+        }
+
+        $cors = $this->corsHeaders();
+
         $generation = Generation::where('id', $id)
             ->where('source', 'embed')
             ->firstOrFail();
@@ -458,23 +483,23 @@ JS;
                 'result_url' => $generation->result_image_path
                     ? Storage::disk('public')->url($generation->result_image_path)
                     : $generation->result_image_url,
-            ]);
+            ], 200, $cors);
         }
 
         if ($generation->status === 'failed') {
-            return response()->json(['success' => true, 'status' => 'failed', 'progress' => 0]);
+            return response()->json(['success' => true, 'status' => 'failed', 'progress' => 0], 200, $cors);
         }
 
         if ($generation->started_at && now()->diffInSeconds($generation->started_at) > 90) {
             $generation->update(['status' => 'failed', 'progress' => 0, 'error_message' => 'Zaman aşımı', 'completed_at' => now()]);
             $generation->user->addCredits(1, 'refund', 'Embed zaman aşımı - kredi iadesi');
-            return response()->json(['success' => true, 'status' => 'failed', 'progress' => 0, 'message' => 'Zaman aşımı.']);
+            return response()->json(['success' => true, 'status' => 'failed', 'progress' => 0, 'message' => 'Zaman aşımı.'], 200, $cors);
         }
 
         $result = $this->wiro->getJobStatus($generation->wiro_job_id ?? '');
 
         if (!$result['success']) {
-            return response()->json(['success' => false, 'status' => 'processing', 'progress' => $generation->progress]);
+            return response()->json(['success' => false, 'status' => 'processing', 'progress' => $generation->progress], 200, $cors);
         }
 
         $generation->update(['progress' => $result['progress']]);
@@ -500,16 +525,16 @@ JS;
                 'result_url' => $resultPath
                     ? Storage::disk('public')->url($resultPath)
                     : $result['result_url'],
-            ]);
+            ], 200, $cors);
         }
 
         if ($result['status'] === 'failed') {
             $generation->update(['status' => 'failed', 'progress' => 0, 'completed_at' => now()]);
             $generation->user->addCredits(1, 'refund', 'Embed Wiro başarısız - kredi iadesi');
-            return response()->json(['success' => true, 'status' => 'failed', 'progress' => 0]);
+            return response()->json(['success' => true, 'status' => 'failed', 'progress' => 0], 200, $cors);
         }
 
-        return response()->json(['success' => true, 'status' => 'processing', 'progress' => $result['progress']]);
+        return response()->json(['success' => true, 'status' => 'processing', 'progress' => $result['progress']], 200, $cors);
     }
 
     private function downloadResult(string $url, string $savePath): ?string
