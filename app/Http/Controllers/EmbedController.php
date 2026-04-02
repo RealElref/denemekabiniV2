@@ -48,109 +48,232 @@ class EmbedController extends Controller
   })();
   var DOMAIN_ID = {$domainId};
 
+  var BTN_LABEL  = 'AI ile Dene';
+  var BTN_ICON   = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
+  var LOADER_HTML = '<span class="wiro-loader" aria-label="Yükleniyor"></span>';
+
+  function getImgSrc(img) {
+    return img.src
+      || img.getAttribute('data-src')
+      || img.getAttribute('data-lazy-src')
+      || img.getAttribute('data-original')
+      || img.getAttribute('data-srcset')
+      || '';
+  }
+
+  function scoreImg(img) {
+    var score = 0;
+    var src = (getImgSrc(img) || '').toLowerCase();
+    var alt = (img.alt || '').toLowerCase();
+    var cls = ((img.className || '') + ' ' + (img.getAttribute('data-class') || '')).toLowerCase();
+    var par = img.parentElement ? (img.parentElement.className || '').toLowerCase() : '';
+
+    if (!src || src.startsWith('data:') || src.includes('logo') || src.includes('icon') || src.includes('sprite')) return -1;
+
+    var w = img.naturalWidth || img.width || parseInt(img.getAttribute('width') || '0');
+    var h = img.naturalHeight || img.height || parseInt(img.getAttribute('height') || '0');
+    if (w > 0 && h > 0 && (w < 80 || h < 80)) return -1;
+
+    if (w > 200 && h > 200) score += 10;
+    if (w > 400 && h > 400) score += 10;
+
+    var keywords = ['product','kiyafet','clothing','outfit','fashion','model','wear','giyim','urun','garment','apparel','item'];
+    keywords.forEach(function(k) {
+      if (src.includes(k) || alt.includes(k) || cls.includes(k) || par.includes(k)) score += 5;
+    });
+
+    if (img.closest('[class*="product"]') || img.closest('[class*="item"]') || img.closest('[class*="card"]')) score += 8;
+    if (img.closest('main') || img.closest('[role="main"]')) score += 3;
+    if (img.closest('header') || img.closest('footer') || img.closest('nav')) score -= 5;
+
+    return score;
+  }
+
   function findBestImage() {
     var imgs = Array.from(document.querySelectorAll('img'));
-    var scored = imgs.map(function(img) {
-      var score = 0;
-      var w = img.naturalWidth || img.width || 0;
-      var h = img.naturalHeight || img.height || 0;
-      if (w > 200 && h > 200) score += 10;
-      if (w > 400 && h > 400) score += 10;
-      var src = (img.src || '').toLowerCase();
-      var alt = (img.alt || '').toLowerCase();
-      var cls = (img.className || '').toLowerCase();
-      var keywords = ['product','kiyafet','clothing','outfit','fashion','model','wear','giyim','urun'];
-      keywords.forEach(function(k){ if(src.includes(k)||alt.includes(k)||cls.includes(k)) score += 5; });
-      if (img.closest('[class*="product"]') || img.closest('[class*="item"]')) score += 8;
-      return { img: img, score: score };
+    var best = null, bestScore = -999;
+    imgs.forEach(function(img) {
+      var s = scoreImg(img);
+      if (s > bestScore) { bestScore = s; best = img; }
     });
-    scored.sort(function(a,b){ return b.score - a.score; });
-    return scored.length ? scored[0].img : null;
+    return bestScore >= 0 ? best : null;
+  }
+
+  function findProductImages() {
+    var results = [];
+    var targets = document.querySelectorAll('[data-wiro-garment], [data-wiro-target]');
+    if (targets.length) return null;
+
+    var selectors = [
+      '.product-image img', '.product__image img', '.product-photo img',
+      '[class*="product"] img', '[class*="gallery"] img',
+      '[data-product-image] img', 'img[itemprop="image"]',
+      '.swiper-slide img', '.slick-slide img', '.carousel-item img'
+    ];
+
+    selectors.forEach(function(sel) {
+      try {
+        document.querySelectorAll(sel).forEach(function(img) {
+          if (results.indexOf(img) === -1 && scoreImg(img) >= 0) results.push(img);
+        });
+      } catch(e) {}
+    });
+
+    return results.length ? results : null;
   }
 
   function createStyles() {
+    if (document.getElementById('wiro-styles')) return;
     var style = document.createElement('style');
+    style.id = 'wiro-styles';
     style.textContent = [
-      '.wiro-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(59,130,246,0.4);transition:all .2s;font-family:inherit;letter-spacing:.01em}',
-      '.wiro-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.5)}',
+      '.wiro-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff !important;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(59,130,246,0.4);transition:all .2s;font-family:inherit;letter-spacing:.01em;z-index:9999;position:relative;text-decoration:none !important;line-height:1.4}',
+      '.wiro-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.5);color:#fff !important}',
       '.wiro-btn:disabled{opacity:.7;cursor:not-allowed;transform:none}',
-      '.wiro-btn svg{flex-shrink:0}',
-      '.wiro-loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:wiro-spin .7s linear infinite}',
-      '@keyframes wiro-spin{to{transform:rotate(360deg)}}'
+      '.wiro-btn svg{flex-shrink:0;pointer-events:none}',
+      '.wiro-loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:wiro-spin .7s linear infinite;flex-shrink:0}',
+      '@keyframes wiro-spin{to{transform:rotate(360deg)}}',
+      '.wiro-wrap{margin-top:8px;display:block}'
     ].join('');
     document.head.appendChild(style);
-  }
-
-  function injectButtons() {
-    var targets = document.querySelectorAll('[data-wiro-target], [data-wiro-garment]');
-    if (!targets.length) {
-      var bestImg = findBestImage();
-      if (bestImg) {
-        var wrapper = bestImg.parentElement;
-        var btn = createButton(bestImg.src);
-        wrapper.style.position = 'relative';
-        wrapper.appendChild(btn);
-      }
-    } else {
-      targets.forEach(function(el) {
-        var garmentUrl = el.dataset.wiroGarment || (el.tagName === 'IMG' ? el.src : '');
-        var btn = createButton(garmentUrl);
-        if (el.dataset.wiroTarget) {
-          var t = document.querySelector(el.dataset.wiroTarget);
-          if (t) t.appendChild(btn);
-        } else {
-          el.parentElement.appendChild(btn);
-        }
-      });
-    }
   }
 
   function createButton(garmentUrl) {
     var btn = document.createElement('button');
     btn.className = 'wiro-btn';
-    btn.dataset.garmentUrl = garmentUrl || '';
-    btn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>Dene';
-    btn.addEventListener('click', function() {
+    btn.setAttribute('type', 'button');
+    btn.setAttribute('data-wiro-btn', '1');
+    btn.setAttribute('data-garment-url', garmentUrl || '');
+    btn.innerHTML = BTN_ICON + BTN_LABEL;
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       handleClick(btn, garmentUrl);
     });
     return btn;
   }
 
-  function handleClick(btn, garmentUrl) {
-    btn.disabled = true;
-    btn.innerHTML = '<span class="wiro-loader"></span>Aranıyor...';
+  function openTryPage(garmentUrl) {
+    var params = new URLSearchParams({
+      domain_id: DOMAIN_ID,
+      ref: window.location.href
+    });
+    if (garmentUrl) params.set('garment_url', garmentUrl);
+    window.open(BASE + '/dene?' + params.toString(), '_blank', 'width=520,height=700,scrollbars=yes,resizable=yes');
+  }
 
-    var finalGarment = garmentUrl;
+  function resetBtn(btn, garmentUrl) {
+    btn.disabled = false;
+    btn.innerHTML = BTN_ICON + BTN_LABEL;
+    btn.setAttribute('data-garment-url', garmentUrl || '');
+  }
+
+  function handleClick(btn, garmentUrl) {
+    var finalGarment = garmentUrl || btn.getAttribute('data-garment-url') || '';
+
     if (!finalGarment) {
-      var img = findBestImage();
-      finalGarment = img ? img.src : '';
+      var bestImg = findBestImage();
+      finalGarment = bestImg ? getImgSrc(bestImg) : '';
     }
 
-    if (!finalGarment) {
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>Dene';
-      alert('Kıyafet görseli bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+    btn.disabled = true;
+    btn.innerHTML = LOADER_HTML + 'Açılıyor...';
+
+    openTryPage(finalGarment);
+
+    setTimeout(function() { resetBtn(btn, finalGarment); }, 1500);
+  }
+
+  function injectForTargets() {
+    var targets = document.querySelectorAll('[data-wiro-target], [data-wiro-garment]');
+    targets.forEach(function(el) {
+      if (el.querySelector('[data-wiro-btn]')) return;
+      var garmentUrl = el.getAttribute('data-wiro-garment') || (el.tagName === 'IMG' ? getImgSrc(el) : '');
+      var btn = createButton(garmentUrl);
+      if (el.getAttribute('data-wiro-target')) {
+        var t = document.querySelector(el.getAttribute('data-wiro-target'));
+        if (t && !t.querySelector('[data-wiro-btn]')) t.appendChild(btn);
+      } else {
+        var wrap = document.createElement('div');
+        wrap.className = 'wiro-wrap';
+        wrap.appendChild(btn);
+        el.parentElement.insertBefore(wrap, el.nextSibling);
+      }
+    });
+    return targets.length > 0;
+  }
+
+  function injectForProductImages() {
+    var productImgs = findProductImages();
+    if (!productImgs || !productImgs.length) return false;
+
+    productImgs.forEach(function(img) {
+      var parent = img.parentElement;
+      if (!parent) return;
+      if (parent.querySelector('[data-wiro-btn]')) return;
+
+      var garmentUrl = getImgSrc(img);
+      var btn = createButton(garmentUrl);
+      var wrap = document.createElement('div');
+      wrap.className = 'wiro-wrap';
+      wrap.appendChild(btn);
+
+      var imgParent = img.parentElement;
+      imgParent.style.position = imgParent.style.position || 'relative';
+      imgParent.insertBefore(wrap, img.nextSibling);
+    });
+    return true;
+  }
+
+  function injectFallback() {
+    var bestImg = findBestImage();
+    if (!bestImg) {
+      var floatBtn = createButton('');
+      floatBtn.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;box-shadow:0 8px 30px rgba(59,130,246,0.5)';
+      document.body.appendChild(floatBtn);
       return;
     }
 
-    var params = new URLSearchParams({
-      domain_id: DOMAIN_ID,
-      garment_url: finalGarment,
-      ref: window.location.href
-    });
-    window.open(BASE + '/dene?' + params.toString(), '_blank', 'width=520,height=700,scrollbars=yes');
-
-    setTimeout(function() {
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>Dene';
-    }, 1500);
+    var parent = bestImg.parentElement;
+    if (parent && !parent.querySelector('[data-wiro-btn]')) {
+      var garmentUrl = getImgSrc(bestImg);
+      var btn = createButton(garmentUrl);
+      var wrap = document.createElement('div');
+      wrap.className = 'wiro-wrap';
+      wrap.appendChild(btn);
+      parent.style.position = parent.style.position || 'relative';
+      parent.insertBefore(wrap, bestImg.nextSibling);
+    }
   }
 
-  createStyles();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectButtons);
-  } else {
+  function injectButtons() {
+    if (document.querySelectorAll('[data-wiro-btn]').length) return;
+    if (injectForTargets()) return;
+    if (injectForProductImages()) return;
+    injectFallback();
+  }
+
+  function init() {
+    createStyles();
     injectButtons();
+
+    setTimeout(function() {
+      if (!document.querySelectorAll('[data-wiro-btn]').length) {
+        injectButtons();
+      }
+    }, 1500);
+
+    setTimeout(function() {
+      if (!document.querySelectorAll('[data-wiro-btn]').length) {
+        injectButtons();
+      }
+    }, 3500);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
 JS;
