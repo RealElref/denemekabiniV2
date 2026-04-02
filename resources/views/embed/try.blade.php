@@ -15,15 +15,17 @@
   .logo-text{font-size:0.82rem;color:rgba(255,255,255,0.45)}
   .logo-domain{font-size:0.88rem;font-weight:700;color:rgba(255,255,255,0.85)}
   h2{font-size:1.1rem;font-weight:700;color:#f8fafc;margin-bottom:0.3rem}
-  .sub{font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.5rem;line-height:1.5}
+  .sub{font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem;line-height:1.5}
+  .section-label{font-size:0.75rem;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:0.5rem}
   .garment-preview{width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.08);max-height:160px;object-fit:cover;margin-bottom:1.25rem;display:block}
-  .upload-zone{border:2px dashed rgba(255,255,255,0.15);border-radius:10px;padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:rgba(0,0,0,0.2)}
+  .upload-zone{border:2px dashed rgba(255,255,255,0.15);border-radius:10px;padding:1.25rem 1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:rgba(0,0,0,0.2)}
   .upload-zone:hover{border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.05)}
   .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-  .upload-zone .icon{font-size:2rem;margin-bottom:0.5rem}
+  .upload-zone .icon{font-size:1.75rem;margin-bottom:0.4rem}
   .upload-zone .label{font-size:0.85rem;color:rgba(255,255,255,0.5)}
-  .upload-zone .sublabel{font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:0.25rem}
-  .person-preview{width:100%;border-radius:10px;max-height:200px;object-fit:cover;display:none;margin-top:0.75rem}
+  .upload-zone .sublabel{font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:0.2rem}
+  .thumb-preview{width:100%;border-radius:10px;max-height:160px;object-fit:cover;display:none;margin-top:0.6rem}
+  .divider{height:1px;background:rgba(255,255,255,0.07);margin:1.1rem 0}
   .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:0.8rem;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:1rem}
   .btn-primary{background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;box-shadow:0 4px 15px rgba(59,130,246,0.3)}
   .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.4)}
@@ -40,8 +42,6 @@
   .alert-err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#FCA5A5}
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .step-upload{transition:opacity .2s}
-  .step-result{transition:opacity .2s}
 </style>
 </head>
 <body>
@@ -57,21 +57,33 @@
     </div>
   </div>
 
-  <div id="step-upload" class="step-upload">
+  <div id="step-upload">
     <h2>Kıyafeti Üstünde Dene</h2>
     <p class="sub">Kendi fotoğrafını yükle, yapay zeka kıyafeti üstüne giydirsin.</p>
 
     @if($garmentUrl)
-    <img src="{{ $garmentUrl }}" alt="Kıyafet" class="garment-preview" onerror="this.style.display='none'">
+      <div class="section-label">Kıyafet</div>
+      <img src="{{ $garmentUrl }}" alt="Kıyafet" class="garment-preview" onerror="this.style.display='none'">
+    @else
+      <div class="section-label">Kıyafet Görseli</div>
+      <div class="upload-zone" id="garment-drop" onclick="document.getElementById('garment-input').click()">
+        <input type="file" id="garment-input" accept="image/jpeg,image/png,image/webp" onchange="onGarmentPick(this)">
+        <div class="icon">👗</div>
+        <div class="label">Kıyafet fotoğrafı seç</div>
+        <div class="sublabel">JPG, PNG veya WebP • Maks 10 MB</div>
+      </div>
+      <img id="garment-preview" src="" alt="Kıyafet Önizleme" class="thumb-preview">
+      <div class="divider"></div>
     @endif
 
+    <div class="section-label">Kişi Fotoğrafı</div>
     <div class="upload-zone" id="person-drop" onclick="document.getElementById('person-input').click()">
       <input type="file" id="person-input" accept="image/jpeg,image/png,image/webp" onchange="onPersonPick(this)">
       <div class="icon">👤</div>
       <div class="label">Kişi fotoğrafı seç</div>
       <div class="sublabel">JPG, PNG veya WebP • Maks 10 MB</div>
     </div>
-    <img id="person-preview" src="" alt="Önizleme" class="person-preview">
+    <img id="person-preview" src="" alt="Önizleme" class="thumb-preview">
 
     <div id="alert-err" class="alert alert-err"></div>
 
@@ -89,15 +101,15 @@
     </div>
   </div>
 
-  <div id="step-result" class="step-result" style="display:none">
+  <div id="step-result" style="display:none">
     <h2 style="margin-bottom:0.75rem">Sonuç Hazır!</h2>
-    <img id="result-img" src="" alt="Sonuç">
-    <div>
-      <a id="result-download" href="#" download="wiro-result.png" class="download-btn">
+    <img id="result-img" src="" alt="Sonuç" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.1);max-height:340px;object-fit:cover">
+    <div style="text-align:center">
+      <a id="result-download" href="#" download="wiro-result.png" class="download-btn" style="display:inline-flex;align-items:center;gap:6px;margin-top:0.75rem;padding:0.5rem 1.2rem;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);border-radius:8px;color:#34D399;font-size:0.82rem;font-weight:600;text-decoration:none">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v8m0 0l-3-3m3 3l3-3M12 4v4"/></svg>
         İndir
       </a>
-      <button onclick="resetEmbed()" style="display:inline-flex;align-items:center;gap:6px;margin-top:0.75rem;margin-left:0.5rem;padding:0.5rem 1.2rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all .2s">
+      <button onclick="resetEmbed()" style="display:inline-flex;align-items:center;gap:6px;margin-top:0.75rem;margin-left:0.5rem;padding:0.5rem 1.2rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:600;cursor:pointer">
         Tekrar Dene
       </button>
     </div>
@@ -112,6 +124,7 @@ const BASE_URL    = window.location.origin;
 const CSRF        = '{{ csrf_token() }}';
 
 let personFile   = null;
+let garmentFile  = null;
 let pollingTimer = null;
 let genId        = null;
 
@@ -125,6 +138,18 @@ function onPersonPick(input) {
     p.style.display = 'block';
   };
   reader.readAsDataURL(personFile);
+}
+
+function onGarmentPick(input) {
+  if (!input.files || !input.files[0]) return;
+  garmentFile = input.files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = document.getElementById('garment-preview');
+    p.src = e.target.result;
+    p.style.display = 'block';
+  };
+  reader.readAsDataURL(garmentFile);
 }
 
 function showErr(msg) {
@@ -146,7 +171,7 @@ function setProgress(pct, status) {
 async function startEmbed() {
   hideErr();
   if (!personFile) { showErr('Lütfen kişi fotoğrafı seçin.'); return; }
-  if (!GARMENT_URL) { showErr('Kıyafet görseli bulunamadı.'); return; }
+  if (!GARMENT_URL && !garmentFile) { showErr('Lütfen kıyafet fotoğrafı seçin.'); return; }
 
   const btn = document.getElementById('start-btn');
   btn.disabled = true;
@@ -154,9 +179,14 @@ async function startEmbed() {
 
   const fd = new FormData();
   fd.append('domain_id',    DOMAIN_ID);
-  fd.append('garment_url',  GARMENT_URL);
   fd.append('person_image', personFile);
   fd.append('_token',       CSRF);
+
+  if (GARMENT_URL) {
+    fd.append('garment_url', GARMENT_URL);
+  } else {
+    fd.append('garment_image', garmentFile);
+  }
 
   try {
     const res  = await fetch(BASE_URL + '/embed/start', { method:'POST', body:fd, credentials:'include' });
@@ -176,7 +206,7 @@ async function startEmbed() {
 
   } catch (e) {
     btn.disabled = false;
-    btn.innerHTML = 'Yapay Zeka ile Dene';
+    btn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3"/></svg>Yapay Zeka ile Dene';
     showErr('Bağlantı hatası: ' + e.message);
   }
 }
@@ -195,7 +225,7 @@ function startPolling() {
         clearInterval(pollingTimer);
         const btn = document.getElementById('start-btn');
         btn.disabled = false;
-        btn.innerHTML = 'Yapay Zeka ile Dene';
+        btn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3"/></svg>Yapay Zeka ile Dene';
         document.getElementById('progress-wrap').style.display = 'none';
         showErr(data.message || 'İşlem başarısız oldu.');
       } else {
@@ -215,14 +245,20 @@ function showResult(url) {
 
 function resetEmbed() {
   if (pollingTimer) clearInterval(pollingTimer);
-  personFile = null;
-  genId      = null;
+  personFile  = null;
+  garmentFile = null;
+  genId       = null;
   document.getElementById('person-input').value   = '';
   document.getElementById('person-preview').style.display = 'none';
   document.getElementById('progress-wrap').style.display  = 'none';
   document.getElementById('alert-err').style.display      = 'none';
-  document.getElementById('start-btn').disabled  = false;
-  document.getElementById('start-btn').innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3"/></svg>Yapay Zeka ile Dene';
+  const gInput = document.getElementById('garment-input');
+  if (gInput) gInput.value = '';
+  const gPreview = document.getElementById('garment-preview');
+  if (gPreview) gPreview.style.display = 'none';
+  const btn = document.getElementById('start-btn');
+  btn.disabled  = false;
+  btn.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 2C9.5 2 8 4 8 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-3s-1.5-2-4-2z"/><circle cx="12" cy="13" r="3"/></svg>Yapay Zeka ile Dene';
   setProgress(0, 'İşleniyor...');
   document.getElementById('step-result').style.display = 'none';
   document.getElementById('step-upload').style.display = 'block';
@@ -237,21 +273,27 @@ function getStatusText(pct) {
   return 'Tamamlanıyor...';
 }
 
-const dropZone = document.getElementById('person-drop');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor='rgba(59,130,246,.6)'; });
-dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor=''; });
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.style.borderColor = '';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    const input = document.getElementById('person-input');
-    input.files = dt.files;
-    onPersonPick(input);
-  }
-});
+function makeDraggable(dropId, inputId, onPickFn) {
+  const dropZone = document.getElementById(dropId);
+  if (!dropZone) return;
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor='rgba(59,130,246,.6)'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor=''; });
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.style.borderColor = '';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      const input = document.getElementById(inputId);
+      input.files = dt.files;
+      onPickFn(input);
+    }
+  });
+}
+
+makeDraggable('person-drop', 'person-input', onPersonPick);
+makeDraggable('garment-drop', 'garment-input', onGarmentPick);
 </script>
 </body>
 </html>

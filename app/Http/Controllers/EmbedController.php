@@ -210,10 +210,15 @@ JS;
     public function startGeneration(Request $request)
     {
         $request->validate([
-            'domain_id'    => 'required|integer',
-            'garment_url'  => 'required|url|max:2048',
-            'person_image' => 'required|image|max:10240|mimes:jpg,jpeg,png,webp',
+            'domain_id'     => 'required|integer',
+            'garment_url'   => 'nullable|url|max:2048',
+            'garment_image' => 'nullable|image|max:10240|mimes:jpg,jpeg,png,webp',
+            'person_image'  => 'required|image|max:10240|mimes:jpg,jpeg,png,webp',
         ]);
+
+        if (!$request->filled('garment_url') && !$request->hasFile('garment_image')) {
+            return response()->json(['success' => false, 'message' => 'Kıyafet görseli veya dosyası gereklidir.'], 422);
+        }
 
         $domain = Domain::where('id', $request->domain_id)
             ->where('status', 'active')
@@ -237,13 +242,18 @@ JS;
                 $folder, 'person.' . $request->file('person_image')->extension(), 'public'
             );
 
-            $garmentContents = @file_get_contents($request->garment_url);
-            if ($garmentContents === false) {
-                return response()->json(['success' => false, 'message' => 'Kıyafet görseli indirilemedi.'], 422);
+            if ($request->hasFile('garment_image')) {
+                $garmentPath = $request->file('garment_image')->storeAs(
+                    $folder, 'garment.' . $request->file('garment_image')->extension(), 'public'
+                );
+            } else {
+                $garmentContents = @file_get_contents($request->garment_url);
+                if ($garmentContents === false) {
+                    return response()->json(['success' => false, 'message' => 'Kıyafet görseli indirilemedi.'], 422);
+                }
+                $garmentPath = $folder . '/garment.jpg';
+                Storage::disk('public')->put($garmentPath, $garmentContents);
             }
-
-            $garmentPath = $folder . '/garment.jpg';
-            Storage::disk('public')->put($garmentPath, $garmentContents);
 
             $generation = Generation::create([
                 'user_id'            => $owner->id,
@@ -251,7 +261,7 @@ JS;
                 'source'             => 'embed',
                 'person_image_path'  => $personPath,
                 'garment_image_path' => $garmentPath,
-                'garment_url'        => $request->garment_url,
+                'garment_url'        => $request->garment_url ?? null,
                 'status'             => 'processing',
                 'progress'           => 0,
                 'started_at'         => now(),
