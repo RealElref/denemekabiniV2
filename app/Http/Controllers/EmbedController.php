@@ -108,7 +108,21 @@ class EmbedController extends Controller
       '.product-image img', '.product__image img', '.product-photo img',
       '[class*="product"] img', '[class*="gallery"] img',
       '[data-product-image] img', 'img[itemprop="image"]',
-      '.swiper-slide img', '.slick-slide img', '.carousel-item img'
+      '.swiper-slide img', '.slick-slide img', '.carousel-item img',
+      '[class*="ProductImage"] img', '[class*="productImage"] img',
+      '[class*="MainImage"] img', '[class*="mainImage"] img',
+      '[class*="DetailImage"] img', '[class*="detailImage"] img',
+      '[class*="HeroImage"] img', '[class*="heroImage"] img',
+      '[class*="ImageGallery"] img', '[class*="imageGallery"] img',
+      '[class*="ProductGallery"] img', '[class*="productGallery"] img',
+      'figure img', '.pdp-image img', '.pdp img',
+      '[data-testid*="image"] img', '[data-testid*="Image"] img',
+      '[data-testid*="product"] img', '[data-testid*="Product"] img',
+      '.zoom-image img', '.zoomable img', '.magnify img',
+      'img[class*="product"]', 'img[class*="Product"]',
+      'img[class*="main"]', 'img[class*="Main"]',
+      'img[class*="hero"]', 'img[class*="Hero"]',
+      'main img', '[role="main"] img'
     ];
 
     selectors.forEach(function(sel) {
@@ -227,27 +241,22 @@ class EmbedController extends Controller
 
   function injectFallback() {
     var bestImg = findBestImage();
-    if (!bestImg) {
-      var floatBtn = createButton('');
-      floatBtn.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;box-shadow:0 8px 30px rgba(59,130,246,0.5)';
-      document.body.appendChild(floatBtn);
-      return;
-    }
+    var garmentUrl = bestImg ? getImgSrc(bestImg) : '';
 
-    var parent = bestImg.parentElement;
-    if (parent && !parent.querySelector('[data-wiro-btn]')) {
-      var garmentUrl = getImgSrc(bestImg);
-      var btn = createButton(garmentUrl);
-      var wrap = document.createElement('div');
-      wrap.className = 'wiro-wrap';
-      wrap.appendChild(btn);
-      parent.style.position = parent.style.position || 'relative';
-      parent.insertBefore(wrap, bestImg.nextSibling);
-    }
+    var floatBtn = createButton(garmentUrl);
+    floatBtn.style.cssText = 'position:fixed !important;bottom:24px !important;right:24px !important;z-index:2147483647 !important;box-shadow:0 8px 30px rgba(59,130,246,0.5) !important;margin:0 !important';
+    floatBtn.setAttribute('data-wiro-floating', '1');
+    document.body.appendChild(floatBtn);
   }
 
   function injectButtons() {
-    if (document.querySelectorAll('[data-wiro-btn]').length) return;
+    var existing = document.querySelectorAll('[data-wiro-btn]');
+    if (existing.length) {
+      var hasNonFloat = false;
+      existing.forEach(function(b) { if (!b.getAttribute('data-wiro-floating')) hasNonFloat = true; });
+      if (hasNonFloat) return;
+      existing.forEach(function(b) { if (b.getAttribute('data-wiro-floating')) b.remove(); });
+    }
     if (injectForTargets()) return;
     if (injectForProductImages()) return;
     injectFallback();
