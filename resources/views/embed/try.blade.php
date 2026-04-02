@@ -108,7 +108,7 @@
 <script>
 const DOMAIN_ID   = {{ $domain->id }};
 const GARMENT_URL = {{ json_encode($garmentUrl) }};
-const BASE_URL    = '{{ rtrim(config("app.url"), "/") }}';
+const BASE_URL    = window.location.origin;
 const CSRF        = '{{ csrf_token() }}';
 
 let personFile   = null;

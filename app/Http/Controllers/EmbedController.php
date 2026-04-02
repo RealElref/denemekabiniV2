@@ -30,7 +30,6 @@ class EmbedController extends Controller
             return response($js, 403)->header('Content-Type', 'application/javascript');
         }
 
-        $baseUrl  = rtrim(config('app.url'), '/');
         $domainId = $domain->id;
 
         $js = <<<JS
@@ -39,7 +38,14 @@ class EmbedController extends Controller
   if (window.__WiroEmbed) return;
   window.__WiroEmbed = true;
 
-  var BASE = '{$baseUrl}';
+  var BASE = (function() {
+    var scripts = document.querySelectorAll('script[src*="embed.js"]');
+    if (scripts.length) {
+      var url = new URL(scripts[scripts.length - 1].src);
+      return url.origin;
+    }
+    return window.location.origin;
+  })();
   var DOMAIN_ID = {$domainId};
 
   function findBestImage() {
