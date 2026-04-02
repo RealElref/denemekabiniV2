@@ -201,9 +201,15 @@ class EmbedController extends Controller
   function injectForTargets() {
     var targets = document.querySelectorAll('[data-wiro-target], [data-wiro-garment]');
     targets.forEach(function(el) {
-      if (el.querySelector('[data-wiro-btn]')) return;
-      var garmentUrl = el.getAttribute('data-wiro-garment') || (el.tagName === 'IMG' ? getImgSrc(el) : '');
+      var isImg = el.tagName === 'IMG';
+      var alreadyHasBtn = isImg
+        ? (el.parentElement && el.parentElement.querySelector('[data-wiro-btn]'))
+        : el.querySelector('[data-wiro-btn]');
+      if (alreadyHasBtn) return;
+
+      var garmentUrl = el.getAttribute('data-wiro-garment') || (isImg ? getImgSrc(el) : '');
       var btn = createButton(garmentUrl);
+
       if (el.getAttribute('data-wiro-target')) {
         var t = document.querySelector(el.getAttribute('data-wiro-target'));
         if (t && !t.querySelector('[data-wiro-btn]')) t.appendChild(btn);
@@ -211,7 +217,7 @@ class EmbedController extends Controller
         var wrap = document.createElement('div');
         wrap.className = 'wiro-wrap';
         wrap.appendChild(btn);
-        el.parentElement.insertBefore(wrap, el.nextSibling);
+        if (el.parentElement) el.parentElement.insertBefore(wrap, el.nextSibling);
       }
     });
     return targets.length > 0;
