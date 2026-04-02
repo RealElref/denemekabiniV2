@@ -590,7 +590,7 @@ function changePerPage(amount) {
 function showEmbedCode(apiKey, domainName) {
     const baseUrl   = '{{ rtrim(config("app.url"), "/") }}';
     const snippet   = `<script src="${baseUrl}/embed.js?key=${apiKey}" async><\/script>`;
-    const btnSnippet = `<img src="KIYAFET_GORSEL_URL" data-wiro-garment="KIYAFET_GORSEL_URL" alt="${domainName}">\n<!-- Yukarıdaki img etiketime data-wiro-garment ekleyin -->`;
+    const btnSnippet = `<!-- Ürün resim etiketinize data-wiro-garment ekleyin: -->\n<img src="URUN_GORSEL_URL" data-wiro-garment="URUN_GORSEL_URL" alt="Ürün adı">\n<!-- Mevcut img etiketinize sadece data-wiro-garment="..." eklemek yeterlidir -->`;
 
     document.getElementById('embed-modal-domain').innerText = domainName;
     document.getElementById('embed-code-snippet').innerText = snippet;

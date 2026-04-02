@@ -66,25 +66,42 @@ class EmbedController extends Controller
     var src = (getImgSrc(img) || '').toLowerCase();
     var alt = (img.alt || '').toLowerCase();
     var cls = ((img.className || '') + ' ' + (img.getAttribute('data-class') || '')).toLowerCase();
-    var par = img.parentElement ? (img.parentElement.className || '').toLowerCase() : '';
+    var par = img.parentElement ? ((img.parentElement.className || '') + ' ' + (img.parentElement.getAttribute('data-testid') || '') + ' ' + (img.parentElement.getAttribute('data-component') || '')).toLowerCase() : '';
+    var grandPar = (img.parentElement && img.parentElement.parentElement) ? ((img.parentElement.parentElement.className || '') + ' ' + (img.parentElement.parentElement.id || '')).toLowerCase() : '';
+    var closestSection = img.closest('section, article, [class*="product"], [class*="Product"], [class*="item"], [class*="Item"], [class*="card"], [class*="Card"]');
 
-    if (!src || src.startsWith('data:') || src.includes('logo') || src.includes('icon') || src.includes('sprite')) return -1;
+    if (!src || src.startsWith('data:')) return -1;
+
+    var badWords = ['logo','icon','sprite','banner','badge','avatar','thumbnail-nav','thumb-nav','payment','brand-logo','site-logo','header-logo'];
+    for (var i = 0; i < badWords.length; i++) {
+      if (src.includes(badWords[i]) || cls.includes(badWords[i])) return -1;
+    }
 
     var w = img.naturalWidth || img.width || parseInt(img.getAttribute('width') || '0');
     var h = img.naturalHeight || img.height || parseInt(img.getAttribute('height') || '0');
-    if (w > 0 && h > 0 && (w < 80 || h < 80)) return -1;
+    if (w > 0 && h > 0 && (w < 100 || h < 100)) return -1;
 
     if (w > 200 && h > 200) score += 10;
-    if (w > 400 && h > 400) score += 10;
+    if (w > 400 && h > 400) score += 15;
+    if (w > 600 && h > 600) score += 10;
 
-    var keywords = ['product','kiyafet','clothing','outfit','fashion','model','wear','giyim','urun','garment','apparel','item'];
-    keywords.forEach(function(k) {
-      if (src.includes(k) || alt.includes(k) || cls.includes(k) || par.includes(k)) score += 5;
+    var goodWords = ['product','kiyafet','clothing','outfit','fashion','model','wear','giyim','urun','garment','apparel','item','detail','pdp','main','hero','zoom','gallery','featured'];
+    goodWords.forEach(function(k) {
+      if (src.includes(k)) score += 6;
+      if (alt.includes(k)) score += 4;
+      if (cls.includes(k) || par.includes(k)) score += 4;
     });
 
-    if (img.closest('[class*="product"]') || img.closest('[class*="item"]') || img.closest('[class*="card"]')) score += 8;
-    if (img.closest('main') || img.closest('[role="main"]')) score += 3;
-    if (img.closest('header') || img.closest('footer') || img.closest('nav')) score -= 5;
+    if (closestSection) score += 10;
+    if (img.closest('main') || img.closest('[role="main"]')) score += 5;
+    if (img.closest('[class*="swiper"]') || img.closest('[class*="slider"]') || img.closest('[class*="carousel"]') || img.closest('[class*="Slider"]')) score += 8;
+    if (img.closest('header') || img.closest('footer') || img.closest('nav') || img.closest('aside')) score -= 15;
+
+    var imgId = (img.id || '').toLowerCase();
+    if (imgId.includes('main') || imgId.includes('product') || imgId.includes('hero')) score += 8;
+
+    if (img.getAttribute('loading') === 'eager') score += 3;
+    if (img.getAttribute('fetchpriority') === 'high') score += 5;
 
     return score;
   }
@@ -100,38 +117,31 @@ class EmbedController extends Controller
   }
 
   function findProductImages() {
-    var results = [];
     var targets = document.querySelectorAll('[data-wiro-garment], [data-wiro-target]');
     if (targets.length) return null;
 
-    var selectors = [
-      '.product-image img', '.product__image img', '.product-photo img',
-      '[class*="product"] img', '[class*="gallery"] img',
-      '[data-product-image] img', 'img[itemprop="image"]',
-      '.swiper-slide img', '.slick-slide img', '.carousel-item img',
-      '[class*="ProductImage"] img', '[class*="productImage"] img',
-      '[class*="MainImage"] img', '[class*="mainImage"] img',
-      '[class*="DetailImage"] img', '[class*="detailImage"] img',
-      '[class*="HeroImage"] img', '[class*="heroImage"] img',
-      '[class*="ImageGallery"] img', '[class*="imageGallery"] img',
-      '[class*="ProductGallery"] img', '[class*="productGallery"] img',
-      'figure img', '.pdp-image img', '.pdp img',
-      '[data-testid*="image"] img', '[data-testid*="Image"] img',
-      '[data-testid*="product"] img', '[data-testid*="Product"] img',
-      '.zoom-image img', '.zoomable img', '.magnify img',
-      'img[class*="product"]', 'img[class*="Product"]',
-      'img[class*="main"]', 'img[class*="Main"]',
-      'img[class*="hero"]', 'img[class*="Hero"]',
-      'main img', '[role="main"] img'
-    ];
-
-    selectors.forEach(function(sel) {
-      try {
-        document.querySelectorAll(sel).forEach(function(img) {
-          if (results.indexOf(img) === -1 && scoreImg(img) >= 0) results.push(img);
-        });
-      } catch(e) {}
+    var allImgs = Array.from(document.querySelectorAll('img'));
+    var scored = [];
+    allImgs.forEach(function(img) {
+      var s = scoreImg(img);
+      if (s >= 0) scored.push({ img: img, score: s });
     });
+
+    if (!scored.length) return null;
+
+    scored.sort(function(a, b) { return b.score - a.score; });
+
+    var topScore = scored[0].score;
+    if (topScore < 0) return null;
+
+    var threshold = Math.max(topScore - 5, 0);
+    var results = [];
+    for (var i = 0; i < scored.length; i++) {
+      if (scored[i].score >= threshold) {
+        results.push(scored[i].img);
+      }
+      if (results.length >= 3) break;
+    }
 
     return results.length ? results : null;
   }
